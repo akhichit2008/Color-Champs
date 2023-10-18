@@ -1,7 +1,6 @@
 import pygame
 import sys
 from concurrent.futures import ThreadPoolExecutor
-from qlearning import ColorChampsQLearnig
 
 # Define grid properties
 grid_width = 10
@@ -46,24 +45,6 @@ def start_game():
     screen.blit(title,title_rect)
     pygame.display.flip()
 
-
-def get_state(grid_colors,player1_lock,player2_lock):
-    state = []
-
-    for x in range(grid_width):
-        for y in range(grid_height):
-            if grid_colors[x][y] == (0,0,0):
-                state.append(0) # Black Block
-            elif grid_colors[x][y] == player1_color:
-                state.append(1) # Red block
-            elif grid_colors[x][y] == player2_color:
-                state.append(2) # Green block
-    if player1_lock:
-        state.append(0) # Player 1's turn
-    else:
-        state.append(1) # Player 2's turn
-
-    return tuple(state)
 
 def draw_grid():
     for x in range(grid_width):
@@ -157,15 +138,11 @@ def handleTurn(mouse_x, mouse_y):
 
     if player1_lock:
         player_color = player1_color
-        state = get_current_game_state()
-        action = q_player1.action(state)
         if makeMove(grid_x, grid_y, player_color):
             player1_lock = False
             player2_lock = True
     elif player2_lock:
         player_color = player2_color
-        state = get_current_game_state()
-        action = q_player2.action(state)
         if makeMove(grid_x, grid_y, player_color):
             player1_lock = True
             player2_lock = False
@@ -233,13 +210,6 @@ while running:
     screen.blit(player2_text, player2_rect)
     '''
 
-    inital_state = get_state(grid_colors,player1_lock,player2_lock)
-    num_states = len(inital_state)
-    num_actions = len(get_valid_moves())
-
-    q_player1 = ColorChampsQLearning(num_states,num_actions)
-    q_player2 = ColorChampsQLearning(num_states,num_actions)
-
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -248,7 +218,6 @@ while running:
             mouse_x, mouse_y = pygame.mouse.get_pos()
             
             handleTurn(mouse_x,mouse_y)
-
 
     current_time = pygame.time.get_ticks()
     remaining_time = max(0, timer_duration - (current_time - start_time))
